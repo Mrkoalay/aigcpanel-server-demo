@@ -5,6 +5,7 @@ import sys
 import time
 import os
 
+from cosyvoice_client import CosyVoiceError, synthesize_clone, synthesize_tts
 # 解析输入配置文件
 config = json.loads(open(sys.argv[1], 'r').read())
 # 保存文件到临时文件，方便调试
@@ -49,24 +50,32 @@ modelConfig = config.get('modelConfig', {})
 ## 参考 ./_example/soundTts.json
 if modelConfig.get('type') == 'soundTts':
     print('正在合成', 'config=', config)
-    time.sleep(10)
     resultPath = cacheRandom('wav')
-    shutil.copy('./example/nihao.wav', resultPath)
-    print('合成完成', resultPath)
-    ## 语音合成输出结果
-    printResult('url', resultUrl(resultPath))
+    try:
+        synthesize_tts(modelConfig, resultPath)
+        print('合成完成', resultPath)
+        ## 语音合成输出结果
+        printResult('url', resultUrl(resultPath))
+    except CosyVoiceError as error:
+        print('CosyVoice 合成失败，回退示例音频', error)
+        shutil.copy('./example/nihao.wav', resultPath)
+        printResult('url', resultUrl(resultPath))
 ########### 语音合成 ###########
 
 ########### 语音克隆 ###########
 ## 参考 ./_example/soundClone.json
 elif modelConfig.get('type') == 'soundClone':
     print('正在克隆', 'config=', config)
-    time.sleep(10)
     resultPath = cacheRandom('wav')
-    shutil.copy('./example/nihao.wav', resultPath)
-    print('克隆完成', resultPath)
-    ## 语音克隆输出结果
-    printResult('url', resultUrl(resultPath))
+    try:
+        synthesize_clone(modelConfig, resultPath)
+        print('克隆完成', resultPath)
+        ## 语音克隆输出结果
+        printResult('url', resultUrl(resultPath))
+    except CosyVoiceError as error:
+        print('CosyVoice 克隆失败，回退示例音频', error)
+        shutil.copy('./example/nihao.wav', resultPath)
+        printResult('url', resultUrl(resultPath))
 ########### 语音克隆 ###########
 
 ########### 视频合成 ###########
